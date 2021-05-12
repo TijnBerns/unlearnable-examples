@@ -1,6 +1,6 @@
 # unlearnable-examples
 
-This repository contains the the code created for the bachelor thesis Exploring Unlearnable Examples by Tijn Berns.
+This repository contains the the code created for the bachelor thesis Exploring Unlearnable Examples.
 The thesis explores the resistance of error-minimizing noise against adversarial training and data augmentation.
 
 ### How to use to program
