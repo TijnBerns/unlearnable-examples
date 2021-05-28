@@ -37,7 +37,7 @@ def test_trained_model(model, save, trainer, pgd, fgsm, test_loader):
 def main(args, device):
     # Initialize datasets and loaders
     datasetGenerator = dataset.DatasetGenerator(args.dataset, args.train_batch, args.test_batch, args.data_path,
-                                                args.transform, args.delta_path + args.noise + '.pt')
+                                                args.trans_arg, args.transform,  args.delta_path + args.noise + '.pt')
 
     train_loader, validation_loader, test_loader = datasetGenerator.get_data_loaders()
 
@@ -75,7 +75,7 @@ def main(args, device):
         return
 
     elif args.todo == "show_noise":
-        index = 32
+        index = 32      # Index of image showed in the visualization of data augmentation techniques
         images, _ = next(iter(train_loader))
         noise = torch.load(args.delta_path + args.noise + '.pt')
 
@@ -83,8 +83,8 @@ def main(args, device):
         for i in range(len(noise)):
             noise[i] = noise[i].mul(100)
 
-        visual.show_images(noise, 3, 3, 'noise')
-        visual.show_images(images, 10, 10, 'images')
+        visual.show_images(noise, 3, 3,  save=args.result_path + 'noise')
+        visual.show_images(images, 3, 3,  save=args.result_path + 'images')
 
         visual.show_image(images[index], save=args.result_path + 'img_' + str(index))
         visual.show_image(noise[index], save=args.result_path + 'noise_' + str(index))
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     argument.print_args(args)
 
     # Print runtime information
-    print('{:<20} : {}\n'.format('Python version', str(platform.python_version())) +
+    print('{:<20} : {}\n`'.format('Python version', str(platform.python_version())) +
           '{:<20} : {}\n'.format('Device being used', str(device)) +
           '{:<20} : {}\n'.format('Python version', str(torch.__version__)))
 
@@ -136,6 +136,8 @@ if __name__ == "__main__":
                         level=logging.INFO,
                         format='%(message)s',
                         filemode='w')
+
+    logging.info(device)
 
     # Run program with parsed arguments
     main(args, device)

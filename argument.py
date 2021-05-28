@@ -6,7 +6,7 @@ def parser():
     parser.add_argument('--todo', default='train_nat',
                         choices=['train_nat', 'train_fgsm', 'train_pgd', 'sample_wise', 'class_wise', 'show_noise'],
                         help='The task the program executes')
-    parser.add_argument('--dataset', default='poison_cifar10',
+    parser.add_argument('--dataset', default='cifar10',
                         choices=['mnist', 'cifar10', 'poison_cifar10'],
                         help='The dataset that is used')
     parser.add_argument('--noise', default='sample_wise_8',
@@ -15,6 +15,11 @@ def parser():
                         help='The name of a model that is loaded (must be a \'.pt\' file) (only used when testing)')
     parser.add_argument('--transform', default=None,
                         help='The transform that is used for the training set')
+    parser.add_argument('--trans_arg', default=None, type=int,
+                        help='Argument used in transformation. Only used in the following transformations:\n'
+                             'Gaussian noise: std = trans_arg / 100\n'
+                             'Dropout: p = trans_arg / 10\n'
+                             'JPEG Compression: c = trans_arg\n')
     parser.add_argument('--train_batch', default=128, type=int,
                         help='The batch size of the training and validation set')
     parser.add_argument('--test_batch', default=128, type=int,
@@ -33,7 +38,7 @@ def parser():
                         help="The number of training steps for generating unlearnable noise")
     parser.add_argument('--max_iter', default=500, type=int,
                         help="maximum number of iterations for generating unlearnable noise")
-    parser.add_argument('--model_path', default="models/", type=str,
+    parser.add_argument('--model_path', default="/ceph/csedu-scratch/other/tberns/models/", type=str,
                         help="Path to which the checkpoints are saved and loaded")
     parser.add_argument('--result_path', default="results/", type=str,
                         help="Path to which the training results are logged")

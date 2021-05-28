@@ -103,6 +103,7 @@ class Trainer:
 
             # Save model
             if validation_error < best_error:
+                best_error = validation_error
                 torch.save(self.model.state_dict(), save + ".pt")
 
         print(f"Total training time: {time.time() - start} sec")

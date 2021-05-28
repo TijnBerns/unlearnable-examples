@@ -5,7 +5,7 @@ from torchvision import datasets, transforms
 
 
 class DatasetGenerator:
-    def __init__(self, dataset, train_batch, test_batch, path, train_transform=None, noise_file=None):
+    def __init__(self, dataset, train_batch, test_batch, path, trans_arg, train_transform=None, noise_file=None):
         """
         Class used to generate dataset
 
@@ -22,9 +22,9 @@ class DatasetGenerator:
         self.test_batch = test_batch
 
         if train_transform is None:
-            self.train_transform = transforms.Compose(get_transform(dataset))
+            self.train_transform = transforms.Compose(get_transform(dataset, trans_arg))
         else:
-            self.train_transform = transforms.Compose(get_transform(train_transform))
+            self.train_transform = transforms.Compose(get_transform(train_transform, trans_arg))
 
         self.test_transform = transforms.ToTensor()
         self.noise_file = noise_file
@@ -72,7 +72,6 @@ class DatasetGenerator:
         test_loader = DataLoader(test_set, batch_size=self.test_batch, shuffle=False)
 
         return train_loader, validation_loader, test_loader
-
 
 
 class PerturbedDataset(Dataset):
