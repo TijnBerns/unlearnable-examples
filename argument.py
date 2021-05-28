@@ -15,7 +15,7 @@ def parser():
                         help='The name of a model that is loaded (must be a \'.pt\' file) (only used when testing)')
     parser.add_argument('--transform', default=None,
                         help='The transform that is used for the training set')
-    parser.add_argument('--trans_arg', default=None, type=int,
+    parser.add_argument('--trans_arg', default=1, type=int,
                         help='Argument used in transformation. Only used in the following transformations:\n'
                              'Gaussian noise: std = trans_arg / 100\n'
                              'Dropout: p = trans_arg / 10\n'
