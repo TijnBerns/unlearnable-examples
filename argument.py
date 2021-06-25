@@ -38,6 +38,7 @@ def parser():
                         help="The number of training steps for generating unlearnable noise")
     parser.add_argument('--max_iter', default=500, type=int,
                         help="maximum number of iterations for generating unlearnable noise")
+    parser.add_argument('--k_size', default=3, type=int)
     parser.add_argument('--model_path', default="/ceph/csedu-scratch/other/tberns/models/", type=str,
                         help="Path to which the checkpoints are saved and loaded")
     parser.add_argument('--result_path', default="results/", type=str,
@@ -48,6 +49,8 @@ def parser():
                         help="Path to which the dataset files are saved and loaded")
     parser.add_argument('--save', '-s', default='-', type=str,
                         help="Name used to save trained models, generated noise, and logging files")
+    parser.add_argument('--gpu', default=1, type=int, choices=[0, 1],
+                        help="flag whether to use GPU (1) or CPU (0)")
     return parser.parse_args()
 
 

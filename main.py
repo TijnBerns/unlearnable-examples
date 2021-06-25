@@ -37,7 +37,7 @@ def test_trained_model(model, save, trainer, pgd, fgsm, test_loader):
 def main(args, device):
     # Initialize datasets and loaders
     datasetGenerator = dataset.DatasetGenerator(args.dataset, args.train_batch, args.test_batch, args.data_path,
-                                                args.trans_arg, args.transform,  args.delta_path + args.noise + '.pt')
+                                                args.trans_arg, args.transform, args.delta_path + args.noise + '.pt')
 
     train_loader, validation_loader, test_loader = datasetGenerator.get_data_loaders()
 
@@ -47,7 +47,7 @@ def main(args, device):
         net.load_state_dict(torch.load(args.model_path + args.model + '.pt'))
 
     # Initialize attacks and trainer
-    trainer = Trainer(net)
+    trainer = Trainer(device, net)
     pgd_max = attacks.PGDMax(device, args.epsilon, args.epsilon / 10, args.iterations, args.restarts)
     fgsm = attacks.FGSM(device, args.epsilon)
 
@@ -75,7 +75,7 @@ def main(args, device):
         return
 
     elif args.todo == "show_noise":
-        index = 32      # Index of image showed in the visualization of data augmentation techniques
+        index = 32  # Index of image showed in the visualization of data augmentation techniques
         images, _ = next(iter(train_loader))
         noise = torch.load(args.delta_path + args.noise + '.pt')
 
@@ -83,14 +83,15 @@ def main(args, device):
         for i in range(len(noise)):
             noise[i] = noise[i].mul(100)
 
-        visual.show_images(noise, 3, 3,  save=args.result_path + 'noise')
-        visual.show_images(images, 3, 3,  save=args.result_path + 'images')
+        visual.show_images(noise, 3, 3, save=args.result_path + 'noise')
+        visual.show_images(images, 3, 3, save=args.result_path + 'images')
 
         visual.show_image(images[index], save=args.result_path + 'img_' + str(index))
         visual.show_image(noise[index], save=args.result_path + 'noise_' + str(index))
         return
 
-    perturbation = NoiseGenerator(net, args.epsilon, args.iterations, args.max_iter, args.train_step, args.stop_error)
+    perturbation = NoiseGenerator(device, net, args.epsilon, args.iterations, args.max_iter, args.train_step,
+                                  args.stop_error)
 
     if args.todo == "sample_wise":
         # Generate sample wise error minimizing noise
@@ -107,10 +108,13 @@ def main(args, device):
 
 
 if __name__ == "__main__":
+    args = argument.parser()
+    argument.print_args(args)
+
     # Set seed and device
     seed = 0
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and args.gpu != 0:
         device = torch.device("cuda")
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
@@ -123,11 +127,8 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = True
     torch.backends.cudnn.deterministic = True
 
-    args = argument.parser()
-    argument.print_args(args)
-
     # Print runtime information
-    print('{:<20} : {}\n`'.format('Python version', str(platform.python_version())) +
+    print('{:<20} : {}\n'.format('Python version', str(platform.python_version())) +
           '{:<20} : {}\n'.format('Device being used', str(device)) +
           '{:<20} : {}\n'.format('Python version', str(torch.__version__)))
 

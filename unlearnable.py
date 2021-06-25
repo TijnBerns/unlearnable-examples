@@ -36,7 +36,7 @@ def add_class_wise_noise(images, labels, noise):
 
 
 class NoiseGenerator:
-    def __init__(self, model, epsilon, iterations, max_iterations, train_steps, stop_error):
+    def __init__(self, device, model, epsilon, iterations, max_iterations, train_steps, stop_error):
         """
         Class used to generate sample wise noise
 
@@ -47,11 +47,11 @@ class NoiseGenerator:
         :param train_steps: Number of training steps (M)
         :param stop_error: Error at which algorithm stops executing (lambda)
         """
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
         self.epsilon = epsilon
         self.model = model
         self.attack = attacks.PGDMin(self.device, epsilon, epsilon / 10, iterations)
-        self.trainer = trainer.Trainer(model)
+        self.trainer = trainer.Trainer(device, model)
         self.optimizer = optim.SGD(self.model.parameters(), momentum=0.9, lr=0.1, weight_decay=0.0005)
         self.max_iter = max_iterations
         self.train_step = train_steps
