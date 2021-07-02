@@ -130,7 +130,7 @@ if __name__ == "__main__":
     # Print runtime information
     print('{:<20} : {}\n'.format('Python version', str(platform.python_version())) +
           '{:<20} : {}\n'.format('Device being used', str(device)) +
-          '{:<20} : {}\n'.format('Python version', str(torch.__version__)))
+          '{:<20} : {}\n'.format('Pytorch version', str(torch.__version__)))
 
     # Set logging configuration
     logging.basicConfig(filename=args.result_path + args.save + ".csv",
