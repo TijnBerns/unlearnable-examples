@@ -42,9 +42,10 @@ def main(args, device):
     train_loader, validation_loader, test_loader = datasetGenerator.get_data_loaders()
 
     # Initialize model
-    net = get_model(args.dataset).to(device)
-    if args.model is not None:
-        net.load_state_dict(torch.load(args.model_path + args.model + '.pt'))
+    model = args.dataset if args.model is None else args.model
+    net = get_model(model).to(device)
+    if args.load_model is not None:
+        net.load_state_dict(torch.load(args.model_path + args.load_model + '.pt'))
 
     # Initialize attacks and trainer
     trainer = Trainer(device, net)
@@ -71,7 +72,7 @@ def main(args, device):
 
     elif args.todo == "test":
         # Test performance of trained model model
-        test_trained_model(net, args.model_path + args.model + '.pt', trainer, pgd_max, fgsm, test_loader)
+        test_trained_model(net, args.model_path + args.load_model + '.pt', trainer, pgd_max, fgsm, test_loader)
         return
 
     elif args.todo == "show_noise":
@@ -83,7 +84,7 @@ def main(args, device):
         for i in range(len(noise)):
             noise[i] = noise[i].mul(100)
 
-        visual.show_images(noise, 3, 3, save=args.result_path + 'noise')
+        visual.show_images(noise, 10, 10, save=args.result_path + 'noise')
         visual.show_images(images, 3, 3, save=args.result_path + 'images')
 
         visual.show_image(images[index], save=args.result_path + 'img_' + str(index))

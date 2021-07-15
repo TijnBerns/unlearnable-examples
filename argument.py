@@ -9,9 +9,12 @@ def parser():
     parser.add_argument('--dataset', default='cifar10',
                         choices=['mnist', 'cifar10', 'poison_cifar10'],
                         help='The dataset that is used')
+    parser.add_argument('--model', default=None,
+                        choices=['vgg', 'mlp'],
+                        help='The model that is used')
     parser.add_argument('--noise', default='sample_wise_8',
                         help='The name of the file containing noise (must be a \'.pt\' file)')
-    parser.add_argument('--model', default=None,
+    parser.add_argument('--load_model', default=None,
                         help='The name of a model that is loaded (must be a \'.pt\' file) (only used when testing)')
     parser.add_argument('--transform', default=None,
                         help='The transform that is used for the training set')
@@ -36,7 +39,7 @@ def parser():
                         help="Stopping error for generating unlearnable noise")
     parser.add_argument('--train_step', default=20, type=int,
                         help="The number of training steps for generating unlearnable noise")
-    parser.add_argument('--max_iter', default=500, type=int,
+    parser.add_argument('--max_iter', default=50, type=int,
                         help="Maximum number of iterations of unlearnable noise generation algorithm")
     parser.add_argument('--k_size', default=3, type=int,
                         help='Size of the kernel of the first conv layer (in case rn18 is used)')
