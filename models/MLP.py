@@ -32,4 +32,4 @@ class MLP(nn.Module):
 
 
 def NetCifar(normalize):
-    return MLP(config=[32 * 3 * 3, 256, 128, 10], normalize=normalize)
+    return MLP(config=[32 * 32 * 3, 256, 128, 10], normalize=normalize)
