@@ -3,6 +3,8 @@ import trainer
 import attacks
 import torch.optim as optim
 import logging
+from torchvision import transforms
+from transforms import get_transform
 
 
 def add_sample_wise_noise(images, noise, index):
@@ -36,7 +38,8 @@ def add_class_wise_noise(images, labels, noise):
 
 
 class NoiseGenerator:
-    def __init__(self, device, model, epsilon, iterations, max_iterations, train_steps, stop_error):
+    def __init__(self, device, model, epsilon, iterations, max_iterations, train_steps, stop_error, dataset, transform,
+                 trans_arg):
         """
         Class used to generate sample wise noise
 
@@ -46,6 +49,9 @@ class NoiseGenerator:
         :param max_iterations: Maximum number of iterations of algorithm
         :param train_steps: Number of training steps (M)
         :param stop_error: Error at which algorithm stops executing (lambda)
+        :param dataset: Name of the dataset that is used
+        :param transform: Transformation that is applied
+        :param trans_arg: Arguments used for transformation
         """
         self.device = device
         self.epsilon = epsilon
@@ -56,6 +62,10 @@ class NoiseGenerator:
         self.max_iter = max_iterations
         self.train_step = train_steps
         self.stop_error = stop_error
+        if transform is None:
+            self.transform = transforms.Compose(get_transform(dataset, trans_arg))
+        else:
+            self.transform = transforms.Compose(get_transform(transform, trans_arg))
 
     def sample_wise(self, loader, save):
         """
@@ -93,7 +103,7 @@ class NoiseGenerator:
                     (images, labels) = next(data_iter)
 
                 images, train_idx = add_sample_wise_noise(images, noise, train_idx)
-                images, labels = images.to(self.device), labels.to(self.device)
+                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
                 self.trainer.train_batch(images, labels, self.optimizer)
 
             # Optimize perturbations
@@ -109,7 +119,7 @@ class NoiseGenerator:
                 batch_noise = torch.stack(batch_noise).to(self.device)
 
                 self.model.eval()
-                images, labels = images.to(self.device), labels.to(self.device)
+                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
                 eta = self.attack.compute_noise(self.model, images, labels, batch_noise)
                 for i, delta in enumerate(eta):
                     noise[batch_start_idx + i] = delta.clone().detach().cpu()
@@ -133,7 +143,7 @@ class NoiseGenerator:
         total_err, idx = 0, 0
         for images, labels in loader:
             images, idx = add_sample_wise_noise(images, noise, idx)
-            images, labels = images.to(self.device), labels.to(self.device)
+            images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
             prediction, loss = self.trainer.train_batch(images, labels)
             total_err += (prediction.max(dim=1)[1] != labels).sum().item()
 
@@ -156,7 +166,7 @@ class NoiseGenerator:
         # Generate random initial noise within l-ball
         images, _ = next(iter(loader))
         noise = []
-        for i in range(num_classes):
+        for _ in range(num_classes):
             noise.append(self.attack.random_noise(images[0]))
 
         while condition and iteration < self.max_iter:
@@ -173,7 +183,7 @@ class NoiseGenerator:
                     (images, labels) = next(data_iter)
 
                 add_class_wise_noise(images, labels, noise)
-                images, labels = images.to(self.device), labels.to(self.device)
+                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
                 self.trainer.train_batch(images, labels, self.optimizer)
 
             # Optimize perturbations
@@ -188,7 +198,7 @@ class NoiseGenerator:
                 batch_noise = torch.stack(batch_noise).to(self.device)
 
                 self.model.eval()
-                images, labels = images.to(self.device), labels.to(self.device)
+                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
                 eta = self.attack.compute_noise(self.model, images, labels, batch_noise)
                 for (delta, label) in zip(eta, labels):
                     noise[label.item()] = (noise[label.item()] + delta.clone().detach().cpu()).clamp(-self.epsilon,
@@ -215,6 +225,15 @@ class NoiseGenerator:
         for images, labels in loader:
             images = add_class_wise_noise(images, labels, noise)
             images, labels = images.to(self.device), labels.to(self.device)
+            images = self._augment_batch(images)
             prediction, _ = self.trainer.train_batch(images, labels)
             total_err += (prediction.max(dim=1)[1] != labels).sum().item()
         return total_err / len(loader.dataset)
+
+    def _augment_batch(self, images):
+        augmented_images = torch.zeros(images.size())
+        for i in range(len(images)):
+            img = transforms.ToPILImage()(images.data[i].clamp(0, 1))
+            augmented_images.data[i] = self.transform(img)
+        return augmented_images
+

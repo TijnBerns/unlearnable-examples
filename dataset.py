@@ -22,26 +22,29 @@ class DatasetGenerator:
         self.test_batch = test_batch
 
         if train_transform is None:
-            self.train_transform = transforms.Compose(get_transform(dataset, trans_arg))
+            self.transform = transforms.Compose(get_transform(dataset, trans_arg))
         else:
-            self.train_transform = transforms.Compose(get_transform(train_transform, trans_arg))
+            self.transform = transforms.Compose(get_transform(train_transform, trans_arg))
 
-        self.test_transform = transforms.ToTensor()
+        self.test_transform = transforms.Compose(get_transform(dataset, trans_arg))
         self.noise_file = noise_file
         self.train_set, self.validation_set, self.test_set = self._init_datasets()
 
     def _get_train_test_set(self):
         if self.dataset == 'cifar10':
-            train_set = datasets.CIFAR10(self.path, train=True, download=True, transform=self.train_transform)
+            train_set = datasets.CIFAR10(self.path, train=True, download=True, transform=self.transform)
             test_set = datasets.CIFAR10(self.path, train=False, download=True, transform=self.test_transform)
+
         elif self.dataset == 'poison_cifar10':
             assert self.noise_file is not None
             clean_set = datasets.CIFAR10(self.path, train=True, download=True, transform=transforms.ToTensor())
-            train_set = PerturbedDataset(clean_set, self.noise_file, self.train_transform)
+            train_set = PerturbedDataset(clean_set, self.noise_file, self.transform)
             test_set = datasets.CIFAR10(self.path, train=False, download=True, transform=self.test_transform)
+
         elif self.dataset == 'mnist:':
-            train_set = datasets.MNIST(self.path, train=True, download=True, transform=self.train_transform)
+            train_set = datasets.MNIST(self.path, train=True, download=True, transform=self.transform)
             test_set = datasets.MNIST(self.path, train=False, download=True, transform=self.test_transform)
+
         else:
             raise NotImplementedError
 

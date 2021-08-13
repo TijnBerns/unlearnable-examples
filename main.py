@@ -36,8 +36,14 @@ def test_trained_model(model, save, trainer, pgd, fgsm, test_loader):
 
 def main(args, device):
     # Initialize datasets and loaders
-    datasetGenerator = dataset.DatasetGenerator(args.dataset, args.train_batch, args.test_batch, args.data_path,
+    if args.todo != "sample_wise" and args.todo != "class_wise":
+        # Use data augmentation in dataloader
+        datasetGenerator = dataset.DatasetGenerator(args.dataset, args.train_batch, args.test_batch, args.data_path,
                                                 args.trans_arg, args.transform, args.delta_path + args.noise + '.pt')
+    else:
+        # Don't use data augmentation in dataloader
+        datasetGenerator = dataset.DatasetGenerator(args.dataset, args.train_batch, args.test_batch, args.data_path,
+                                                    args.trans_arg, "tensor", args.delta_path + args.noise + '.pt')
 
     train_loader, validation_loader, test_loader = datasetGenerator.get_data_loaders()
 
@@ -92,7 +98,7 @@ def main(args, device):
         return
 
     perturbation = NoiseGenerator(device, net, args.epsilon, args.iterations, args.max_iter, args.train_step,
-                                  args.stop_error)
+                                  args.stop_error, args.dataset, args.transform, args.trans_arg)
 
     if args.todo == "sample_wise":
         # Generate sample wise error minimizing noise
