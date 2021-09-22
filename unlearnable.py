@@ -119,7 +119,8 @@ class NoiseGenerator:
                 batch_noise = torch.stack(batch_noise).to(self.device)
 
                 self.model.eval()
-                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
+                # images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
+                images, labels = images.to(self.device), labels.to(self.device)
                 eta = self.attack.compute_noise(self.model, images, labels, batch_noise)
                 for i, delta in enumerate(eta):
                     noise[batch_start_idx + i] = delta.clone().detach().cpu()
@@ -183,7 +184,8 @@ class NoiseGenerator:
                     (images, labels) = next(data_iter)
 
                 add_class_wise_noise(images, labels, noise)
-                images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
+                # images, labels = self._augment_batch(images).to(self.device), labels.to(self.device)
+                images, labels = images.to(self.device), labels.to(self.device)
                 self.trainer.train_batch(images, labels, self.optimizer)
 
             # Optimize perturbations

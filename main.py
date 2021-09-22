@@ -88,7 +88,7 @@ def main(args, device):
 
         # Multiply noise to ensure it is visible when plotted
         for i in range(len(noise)):
-            noise[i] = noise[i].mul(100)
+            noise[i] = noise[i].mul(10)
 
         visual.show_images(noise, 10, 10, save=args.result_path + 'noise')
         visual.show_images(images, 3, 3, save=args.result_path + 'images')
