@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from abc import ABC, abstractmethod
+from transforms import get_transform
 
 
 class Attack(ABC):
@@ -117,7 +118,10 @@ class PGDMin(Attack, ABC):
             delta = batch_noise
         delta.requires_grad = True
 
+        # transform_after_perturb = get_transform("gray_cifar10", None)
+
         for t in range(self.iterations):
+            # loss = nn.CrossEntropyLoss()(model(transform_after_perturb(x + delta)), y)
             loss = nn.CrossEntropyLoss()(model(x + delta), y)
             loss.backward()
             delta.data = (delta - self.step_size * delta.grad.detach().sign()).clamp(-self.epsilon, self.epsilon)
